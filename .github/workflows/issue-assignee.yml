@@ -1,0 +1,83 @@
+name: Issue Auto Assignee
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Auto-assign Issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+          const body = issue.body ? issue.body.toLowerCase() : '';
+          
+          // 프로젝트 팀 멤버들
+          const teamMembers = {
+            backend: ['blackhjb'], // 백엔드 담당자
+            frontend: ['blackhjb'], // 프론트엔드 담당자
+            devops: ['blackhjb'], // DevOps 담당자
+            general: ['blackhjb'] // 일반 담당자
+          };
+          
+          let assignees = [];
+          
+          // 이슈 내용 기반 담당자 할당
+          if (title.includes('backend') || title.includes('api') || title.includes('server') || 
+              body.includes('백엔드') || body.includes('서버')) {
+            assignees = teamMembers.backend;
+          } else if (title.includes('frontend') || title.includes('ui') || title.includes('interface') ||
+                     body.includes('프론트엔드') || body.includes('사용자')) {
+            assignees = teamMembers.frontend;
+          } else if (title.includes('deploy') || title.includes('ci') || title.includes('cd') ||
+                     title.includes('docker') || body.includes('배포') || body.includes('인프라')) {
+            assignees = teamMembers.devops;
+          } else {
+            // 기본 할당: 라운드 로빈 방식
+            const allMembers = [...new Set([
+              ...teamMembers.backend,
+              ...teamMembers.frontend,
+              ...teamMembers.devops,
+              ...teamMembers.general
+            ])];
+            
+            // 이슈 번호 기반으로 할당 (간단한 로드 밸런싱)
+            const assigneeIndex = issue.number % allMembers.length;
+            assignees = [allMembers[assigneeIndex]];
+          }
+          
+          // 우선순위 높은 이슈는 여러 명에게 할당
+          if (title.includes('urgent') || title.includes('critical') || body.includes('긴급')) {
+            assignees = [...new Set([...assignees, ...teamMembers.general])];
+          }
+          
+          // 이슈 담당자 할당
+          if (assignees.length > 0) {
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: issue.number,
+                assignees: assignees
+              });
+              
+              console.log(`Successfully assigned ${assignees.join(', ')} to issue #${issue.number}`);
+            } catch (error) {
+              console.log(`Failed to assign issue: ${error.message}`);
+            }
+          }
+          
+          // 할당 완료 댓글 추가
+          const assigneeList = assignees.map(a => `@${a}`).join(', ');
+          await github.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: issue.number,
+            body: `🎯 **담당자 할당 완료**\n\n담당자: ${assigneeList}\n\n안녕하세요! 이 이슈가 자동으로 할당되었습니다. 24시간 내에 확인 후 진행 상황을 업데이트해주세요.`
+          }); 

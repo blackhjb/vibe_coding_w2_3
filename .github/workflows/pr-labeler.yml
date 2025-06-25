@@ -1,0 +1,88 @@
+name: PR Auto Labeler
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Auto-label PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const pr = context.payload.pull_request;
+          const title = pr.title.toLowerCase();
+          const body = pr.body ? pr.body.toLowerCase() : '';
+          
+          let labels = [];
+          
+          // 제목과 본문 기반 라벨링
+          if (title.includes('[feat]') || title.includes('feature') || body.includes('새로운 기능')) {
+            labels.push('enhancement');
+          }
+          
+          if (title.includes('[fix]') || title.includes('bug') || body.includes('버그')) {
+            labels.push('bug');
+          }
+          
+          if (title.includes('[docs]') || title.includes('documentation') || body.includes('문서')) {
+            labels.push('documentation');
+          }
+          
+          if (title.includes('[refactor]') || body.includes('리팩토링')) {
+            labels.push('refactor');
+          }
+          
+          if (title.includes('[test]') || body.includes('테스트')) {
+            labels.push('test');
+          }
+          
+          // 파일 변경 기반 라벨링
+          const files = await github.rest.pulls.listFiles({
+            owner,
+            repo,
+            pull_number: pr.number
+          });
+          
+          const changedFiles = files.data.map(file => file.filename);
+          
+          if (changedFiles.some(file => file.startsWith('backend/'))) {
+            labels.push('backend');
+          }
+          
+          if (changedFiles.some(file => file.startsWith('frontend/'))) {
+            labels.push('frontend');
+          }
+          
+          if (changedFiles.some(file => file.includes('test_'))) {
+            labels.push('test');
+          }
+          
+          if (changedFiles.some(file => file.endsWith('.md'))) {
+            labels.push('documentation');
+          }
+          
+          // 우선순위 라벨링
+          if (title.includes('urgent') || title.includes('critical') || body.includes('긴급')) {
+            labels.push('urgent');
+          }
+          
+          // 중복 제거
+          labels = [...new Set(labels)];
+          
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: pr.number,
+              labels
+            });
+            
+            console.log(`Added labels: ${labels.join(', ')}`);
+          } 

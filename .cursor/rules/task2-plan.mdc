@@ -1,0 +1,78 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Task 2 개발 계획: 핵심 기능 구현
+
+## 구현 항목
+
+### 2.1 백엔드 API 개발
+* FastAPI 기본 라우터 설정
+* Agent 연동 API 엔드포인트 구현
+* 환경 변수 및 설정 파일 구성
+
+### 2.2 LangGraph Agent 구현
+* React Agent 초기화 및 설정
+* DuckDuckGo Search Tool 연동
+* Gemini 2.5 Flash 모델 연동
+* LangSmith 모니터링 설정
+
+### 2.3 프론트엔드 챗봇 UI 개발
+* Streamlit 기본 채팅 인터페이스 구성
+* 백엔드 API 호출 기능
+* 검색 결과 표시 UI
+
+### 2.4 통합 테스트 및 검증
+* API 엔드포인트 테스트
+* Agent 기능 테스트
+* 전체 플로우 통합 테스트
+
+## 기술 스택 및 라이브러리
+
+### 백엔드
+* FastAPI: 웹 프레임워크
+* LangGraph: React Agent 구현
+* LangChain DuckDuckGo: 웹 검색 도구
+* Google Gemini: LLM 모델
+* uvicorn: ASGI 서버
+* LangSmith: Agent 모니터링
+
+### 프론트엔드
+* Streamlit: 챗봇 인터페이스
+
+### 개발 환경
+* Python 3.11
+* 환경 변수 관리: .env 파일
+
+## 개발 계획
+
+1. **환경 변수 설정**
+   * .env 파일 생성 및 API 키 설정
+   * LangSmith 연동 설정
+
+2. **백엔드 API 구조 개발**
+   * main.py 애플리케이션 설정
+   * 기본 라우터 구조 생성
+   * CORS 및 미들웨어 설정
+
+3. **LangGraph React Agent 구현**
+   * create_react_agent 초기화
+   * DuckDuckGo Search Tool 설정
+   * Gemini 모델 연동
+   * Agent 기본 동작 구현
+
+4. **API 엔드포인트 개발**
+   * 채팅 메시지 처리 엔드포인트
+   * Agent 호출 및 응답 처리
+   * 스트리밍 응답 지원
+
+5. **Streamlit 챗봇 UI 구현**
+   * 기본 채팅 인터페이스 구성
+   * 메시지 입력 및 표시 기능
+   * 백엔드 API 연동
+
+6. **통합 및 테스트**
+   * 전체 플로우 연동 테스트
+   * 오류 처리 및 예외 상황 대응
+   * 성능 최적화

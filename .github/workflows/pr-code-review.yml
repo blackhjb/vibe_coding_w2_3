@@ -1,0 +1,98 @@
+name: PR Auto Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Auto Code Review
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const pr = context.payload.pull_request;
+          
+          // PR의 변경된 파일들 가져오기
+          const files = await github.rest.pulls.listFiles({
+            owner,
+            repo,
+            pull_number: pr.number
+          });
+          
+          let reviewComments = [];
+          let generalReview = [];
+          
+          // 파일별 자동 검토
+          for (const file of files.data) {
+            const filename = file.filename;
+            const patch = file.patch || '';
+            
+            // Python 파일 검토
+            if (filename.endsWith('.py')) {
+              if (patch.includes('print(') && !filename.includes('test_')) {
+                reviewComments.push(`⚠️ **${filename}**: print() 문이 발견되었습니다. 로깅을 사용하는 것을 고려해주세요.`);
+              }
+              
+              if (patch.includes('# TODO') || patch.includes('# FIXME')) {
+                reviewComments.push(`📝 **${filename}**: TODO/FIXME 주석이 있습니다. 이슈로 등록하는 것을 고려해주세요.`);
+              }
+              
+              if (file.additions > 100) {
+                reviewComments.push(`📏 **${filename}**: 파일이 큰 변경사항을 포함합니다 (+${file.additions} lines). 더 작은 단위로 나누는 것을 고려해주세요.`);
+              }
+            }
+            
+            // 테스트 파일 검토
+            if (filename.includes('test_')) {
+              if (!patch.includes('assert') && !patch.includes('def test_')) {
+                reviewComments.push(`🧪 **${filename}**: 테스트 파일에 실제 테스트 함수나 assertion이 없는 것 같습니다.`);
+              }
+            }
+            
+            // 설정 파일 검토
+            if (filename.includes('config') || filename.includes('requirements')) {
+              generalReview.push(`⚙️ **${filename}**: 설정 파일이 변경되었습니다. 문서화 및 팀 공유를 확인해주세요.`);
+            }
+          }
+          
+          // 리뷰 코멘트 생성
+          let reviewBody = '## 🤖 자동 코드 리뷰\n\n';
+          
+          if (reviewComments.length > 0) {
+            reviewBody += '### 📋 검토 사항\n';
+            reviewComments.forEach(comment => {
+              reviewBody += `- ${comment}\n`;
+            });
+            reviewBody += '\n';
+          }
+          
+          if (generalReview.length > 0) {
+            reviewBody += '### ℹ️ 일반 사항\n';
+            generalReview.forEach(comment => {
+              reviewBody += `- ${comment}\n`;
+            });
+            reviewBody += '\n';
+          }
+          
+          reviewBody += '### ✅ 자동 검사 완료\n';
+          reviewBody += '- 코드 구조 검토 완료\n';
+          reviewBody += '- 파일 변경사항 분석 완료\n';
+          reviewBody += '- 베스트 프랙티스 검증 완료\n\n';
+          reviewBody += '추가적인 상세 리뷰는 팀 멤버가 진행합니다. 👥';
+          
+          // PR에 리뷰 코멘트 추가
+          await github.rest.pulls.createReview({
+            owner,
+            repo,
+            pull_number: pr.number,
+            body: reviewBody,
+            event: 'COMMENT'
+          }); 

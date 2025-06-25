@@ -1,0 +1,48 @@
+name: PR Auto Assignee
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Auto-assign PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const pr = context.payload.pull_request;
+          
+          // 코드 소유자나 프로젝트 관리자를 여기에 추가하세요
+          const codeOwners = ['blackhjb']; // GitHub 사용자명
+          
+          // PR 작성자가 아닌 사람들 중에서 할당
+          const availableReviewers = codeOwners.filter(owner => owner !== pr.user.login);
+          
+          if (availableReviewers.length > 0) {
+            // 랜덤하게 리뷰어 선택 (라운드 로빈이나 다른 로직으로 변경 가능)
+            const assignee = availableReviewers[Math.floor(Math.random() * availableReviewers.length)];
+            
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: pr.number,
+                assignees: [assignee]
+              });
+              
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number: pr.number,
+                reviewers: [assignee]
+              });
+              
+              console.log(`Successfully assigned ${assignee} to PR #${pr.number}`);
+            } catch (error) {
+              console.log(`Failed to assign reviewer: ${error.message}`);
+            }
+          } 

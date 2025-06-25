@@ -1,0 +1,23 @@
+# Global owners
+* @blackhjb
+
+# Backend code
+/backend/ @blackhjb
+
+# Frontend code  
+/frontend/ @blackhjb
+
+# Tests
+/test_*.py @blackhjb
+
+# Documentation
+*.md @blackhjb
+/docs/ @blackhjb
+
+# GitHub workflows
+/.github/ @blackhjb
+
+# Configuration files
+*.yml @blackhjb
+*.yaml @blackhjb
+requirements.txt @blackhjb 

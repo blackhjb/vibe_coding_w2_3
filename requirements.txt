@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+streamlit
+langgraph
+langchain-google-genai
+langchain-community
+langsmith
+python-dotenv
+pydantic
+duckduckgo-search
+requests
+pytest 

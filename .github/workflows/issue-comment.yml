@@ -1,0 +1,60 @@
+name: Issue Auto Comment
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Add Issue Comment
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { owner, repo } = context.repo;
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+          const body = issue.body ? issue.body.toLowerCase() : '';
+          
+          let commentBody = '## 🎯 이슈 접수 확인\n\n';
+          commentBody += `안녕하세요 @${issue.user.login}님! 새로운 이슈를 등록해주셔서 감사합니다.\n\n`;
+          
+          // 이슈 타입별 안내
+          if (title.includes('[bug]') || title.includes('버그') || title.includes('오류')) {
+            commentBody += '### 🐛 버그 리포트\n';
+            commentBody += '버그 리포트를 접수했습니다. 다음 정보가 포함되어 있는지 확인해주세요:\n';
+            commentBody += '- [ ] 재현 단계\n';
+            commentBody += '- [ ] 예상 결과\n';
+            commentBody += '- [ ] 실제 결과\n';
+            commentBody += '- [ ] 환경 정보 (OS, 브라우저 등)\n\n';
+          } else if (title.includes('[feature]') || title.includes('기능') || title.includes('요청')) {
+            commentBody += '### ✨ 기능 요청\n';
+            commentBody += '새로운 기능 요청을 접수했습니다. 다음 사항을 고려해주세요:\n';
+            commentBody += '- [ ] 기능의 목적과 배경\n';
+            commentBody += '- [ ] 구체적인 사용 사례\n';
+            commentBody += '- [ ] 기대하는 동작 방식\n\n';
+          } else if (title.includes('[question]') || title.includes('질문')) {
+            commentBody += '### ❓ 질문\n';
+            commentBody += '질문을 접수했습니다. 가능한 빠른 시일 내에 답변드리겠습니다.\n\n';
+          }
+          
+          // 우선순위 확인
+          if (title.includes('urgent') || title.includes('critical') || body.includes('긴급')) {
+            commentBody += '### 🚨 높은 우선순위\n';
+            commentBody += '긴급 이슈로 분류되었습니다. 우선적으로 처리하겠습니다.\n\n';
+          }
+          
+          commentBody += '### 📋 다음 단계\n';
+          commentBody += '1. 담당자가 24시간 내에 할당됩니다\n';
+          commentBody += '2. 라벨이 자동으로 추가됩니다\n';
+          commentBody += '3. 진행 상황을 주기적으로 업데이트하겠습니다\n\n';
+          commentBody += '추가 정보가 필요한 경우 댓글로 문의해주세요! 🙏';
+          
+          await github.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: issue.number,
+            body: commentBody
+          }); 

@@ -1,0 +1,43 @@
+name: PR Auto Comment
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Add PR Comment
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🔍 PR 체크리스트
+            
+            안녕하세요! 새로운 PR이 생성되었습니다. 아래 체크리스트를 확인해주세요:
+            
+            ### ✅ 코드 품질
+            - [ ] 코드가 프로젝트 스타일 가이드를 따르고 있나요?
+            - [ ] 적절한 주석이 추가되었나요?
+            - [ ] 불필요한 코드나 디버깅 코드가 제거되었나요?
+            
+            ### 🧪 테스트
+            - [ ] 새로운 기능에 대한 테스트가 추가되었나요?
+            - [ ] 모든 테스트가 통과하나요?
+            - [ ] 기존 기능에 영향을 주지 않나요?
+            
+            ### 📚 문서화
+            - [ ] README나 관련 문서가 업데이트되었나요?
+            - [ ] API 변경사항이 문서화되었나요?
+            
+            ### 🔧 기타
+            - [ ] Breaking change가 있다면 명시되었나요?
+            - [ ] 관련 이슈가 링크되었나요?
+            
+            리뷰어분들께서 확인 후 승인해주시면 됩니다! 🚀`
+          }) 
