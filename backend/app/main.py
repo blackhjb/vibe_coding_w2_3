@@ -112,4 +112,19 @@ async def chat(chat_message: ChatMessage):
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "Vibe Coding Chatbot API is running"} 
+    return {"message": "Vibe Coding Chatbot API is running"}
+
+# PR Test endpoint
+@app.get("/api/pr-test")
+async def pr_test():
+    """PR 테스트용 엔드포인트"""
+    return {
+        "message": "PR 테스트 성공!",
+        "branch": "pr_test",
+        "status": "active",
+        "features": [
+            "새로운 API 엔드포인트 추가",
+            "README.md 업데이트",
+            "브랜치 기반 개발 테스트"
+        ]
+    } 
