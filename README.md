@@ -112,6 +112,18 @@ TASK-001 완료 후 다음 태스크들이 예정되어 있습니다:
 
 - TASK-002: FastAPI 백엔드 기본 구조 구현
 - TASK-003: LangGraph Agent 구현
-- TASK-004: Streamlit 프론트엔드 구현 
+- TASK-004: Streamlit 프론트엔드 구현
 
-커밋테스트야
+## 🔄 PR 테스트
+
+이 섹션은 Pull Request 테스트를 위해 추가되었습니다.
+
+### 테스트 내용
+- ✅ pr_test 브랜치 생성
+- ✅ 소스 코드 수정 (README.md)
+- 🔄 커밋 & 푸시 진행 중
+- ⏳ PR 생성 예정
+
+### 변경사항
+- README.md에 PR 테스트 섹션 추가
+- GitHub Actions 워크플로우 테스트 준비
