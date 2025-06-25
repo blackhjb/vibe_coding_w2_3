@@ -113,3 +113,5 @@ TASK-001 완료 후 다음 태스크들이 예정되어 있습니다:
 - TASK-002: FastAPI 백엔드 기본 구조 구현
 - TASK-003: LangGraph Agent 구현
 - TASK-004: Streamlit 프론트엔드 구현 
+
+커밋테스트야
